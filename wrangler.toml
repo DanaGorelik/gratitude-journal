@@ -1,0 +1,21 @@
+name = "gratitude-journal"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# Cron runs in UTC. 06:00 UTC is 09:00 in Israel during summer time and
+# 07:00 UTC is 09:00 in winter; the handler only sends when it is 09:00 in
+# Israel, so exactly one of these fires a message each day.
+[triggers]
+crons = ["0 6 * * *", "0 7 * * *"]
+
+[vars]
+TIMEZONE = "Asia/Jerusalem"
+SEND_HOUR = "9"
+TEMPLATE_NAME = "gratitude_morning"
+TEMPLATE_LANG = "he"
+GRAPH_VERSION = "v23.0"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gratitude-journal"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
