@@ -45,6 +45,8 @@ export default {
 // ---------- WhatsApp ----------
 
 async function graph(env, body) {
+  const missing = ["WA_TOKEN", "WA_PHONE_NUMBER_ID", "MY_NUMBER"].filter((k) => !env[k]);
+  if (missing.length) return { ok: false, error: `Missing setting(s) in Cloudflare: ${missing.join(", ")}` };
   let res;
   try {
     res = await fetch(
