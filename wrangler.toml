@@ -21,3 +21,6 @@ GRAPH_VERSION = "v23.0"
 binding = "DB"
 database_name = "gratitude-journal"
 database_id = "acabf46c-3289-4f7e-ac0a-b5cfe43182c3"
+
+[observability]
+enabled = true

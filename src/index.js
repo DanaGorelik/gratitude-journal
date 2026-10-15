@@ -95,6 +95,7 @@ function verifyWebhook(url, env) {
 async function receiveWebhook(request, env) {
   const raw = await request.text();
   if (!(await validSignature(raw, request.headers.get("X-Hub-Signature-256"), env.APP_SECRET))) {
+    console.error("Webhook rejected: signature doesn't match APP_SECRET");
     return new Response("Bad signature", { status: 401 });
   }
 
@@ -108,7 +109,11 @@ async function receiveWebhook(request, env) {
   for (const entry of payload.entry || []) {
     for (const change of entry.changes || []) {
       for (const msg of change.value?.messages || []) {
-        if (msg.from !== env.MY_NUMBER || msg.type !== "text") continue;
+        if (msg.from !== env.MY_NUMBER) {
+          console.warn(`Ignoring message from ${msg.from}; MY_NUMBER is ${env.MY_NUMBER}`);
+          continue;
+        }
+        if (msg.type !== "text") continue;
         const items = splitItems(msg.text?.body || "");
         if (!items.length) continue;
 
