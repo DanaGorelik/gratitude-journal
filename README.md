@@ -67,6 +67,14 @@ WhatsApp only lets an app start a conversation with an approved template.
 2. Callback URL: `https://<your-worker-url>/webhook`. Verify token: your `VERIFY_TOKEN`.
 3. Under **Webhook fields**, subscribe to **messages**.
 
+### 6b. Let real messages through
+
+Until these are done, Meta only delivers dashboard test webhooks, so replies never reach the Worker.
+
+1. **App settings → Basic**: set Privacy Policy URL and Data deletion instructions URL to `https://<your-worker-url>/privacy`, pick a category, save.
+2. **Publish** the app (App mode: Live). Nothing becomes public; it just lets real messages flow.
+3. Open `https://<your-worker-url>/j/<JOURNAL_KEY>/subscribe?waba=<WhatsApp Business Account ID>` once. It should say `{"success":true}`.
+
 ### 7. Try it
 
 1. Open `https://<your-worker-url>/j/<JOURNAL_KEY>/send-now`. The morning message should arrive in WhatsApp.
