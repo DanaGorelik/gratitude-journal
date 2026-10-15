@@ -17,6 +17,8 @@ export default {
     if (path === "/webhook" && request.method === "GET") return verifyWebhook(url, env);
     if (path === "/webhook" && request.method === "POST") return receiveWebhook(request, env);
 
+    if (path === "/privacy") return privacyPage();
+
     const prefix = `/j/${env.JOURNAL_KEY}`;
     if (env.JOURNAL_KEY && (path === prefix || path.startsWith(prefix + "/"))) {
       const sub = path.slice(prefix.length) || "/";
@@ -298,6 +300,22 @@ async function exportCsv(env) {
       "Content-Disposition": 'attachment; filename="gratitude.csv"',
     },
   });
+}
+
+// Meta requires a privacy policy and data-deletion URL to publish the app.
+function privacyPage() {
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy</title>
+<style>body{font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:640px;margin:40px auto;padding:0 16px;color:#2b2722}</style>
+</head><body>
+<h1>Privacy policy</h1>
+<p>This is a personal gratitude journal used by its owner only. It sends one WhatsApp message a day to the owner's own number and stores the owner's replies (the text and the date) in a private database so the owner can read them later.</p>
+<p>No data is shared with or sold to anyone. Messages from any other number are ignored and not stored.</p>
+<h2>Data deletion</h2>
+<p>All data belongs to the owner, who can delete any or all entries directly from the database at any time. To ask for deletion, contact the owner of this app.</p>
+</body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
 function formatDay(day) {
