@@ -9,6 +9,8 @@
 //   MY_NUMBER           your WhatsApp number, digits only with country code (9725XXXXXXXX)
 //   JOURNAL_KEY         a long random string; the journal lives at /j/<JOURNAL_KEY>
 
+import { ICON_PNG_BASE64 } from "./icon.js";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -18,6 +20,12 @@ export default {
     if (path === "/webhook" && request.method === "POST") return receiveWebhook(request, env);
 
     if (path === "/privacy") return privacyPage();
+    if (path === "/apple-touch-icon.png") {
+      const bytes = Uint8Array.from(atob(ICON_PNG_BASE64), (c) => c.charCodeAt(0));
+      return new Response(bytes, {
+        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" },
+      });
+    }
 
     const prefix = `/j/${env.JOURNAL_KEY}`;
     if (env.JOURNAL_KEY && (path === prefix || path.startsWith(prefix + "/"))) {
@@ -242,6 +250,8 @@ async function journalPage(env, q) {
 <meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Grateful">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)">
 <title>Grateful</title>
