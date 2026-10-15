@@ -41,7 +41,7 @@ The token on the API Setup page dies after 24 hours, so make a permanent one:
 WhatsApp only lets an app start a conversation with an approved template.
 
 1. In the Meta app, **WhatsApp → API Setup → Manage message templates** (opens WhatsApp Manager) → **Create template**.
-2. Category **Utility**, name `gratitude_morning`, language **Hebrew**.
+2. Category **Marketing** (Meta reclassifies a Utility version and it can get stuck in review), name `gratitude_daily`, language **Hebrew**.
 3. Body: `בוקר טוב ☀️ על אילו 3 דברים יש לך להודות היום?`
 4. Submit. Approval is usually quick.
 
