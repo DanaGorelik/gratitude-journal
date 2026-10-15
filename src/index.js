@@ -24,6 +24,7 @@ export default {
       const sub = path.slice(prefix.length) || "/";
       if (sub === "/") return journalPage(env, url.searchParams.get("q") || "");
       if (sub === "/export.csv") return exportCsv(env);
+      if (sub === "/subscribe") return subscribeApp(env, url.searchParams.get("waba"));
       if (sub === "/send-now") {
         const res = await sendPrompt(env);
         return new Response(res.ok ? "Sent. Check WhatsApp." : `Failed: ${res.error}`, {
@@ -82,6 +83,22 @@ function sendPrompt(env) {
 function sendText(env, text) {
   // Free-form text is allowed here because it answers a message you just sent.
   return graph(env, { type: "text", text: { body: text } });
+}
+
+// Links the WhatsApp Business Account to this app so Meta delivers incoming
+// messages to the webhook. Needed once; the account id is on the API Setup page.
+async function subscribeApp(env, waba) {
+  if (!waba || !/^\d+$/.test(waba)) {
+    return new Response("Add ?waba=<WhatsApp Business Account ID> to the URL", { status: 400 });
+  }
+  const base = `https://graph.facebook.com/${env.GRAPH_VERSION}/${waba}/subscribed_apps`;
+  const headers = { Authorization: `Bearer ${env.WA_TOKEN}` };
+  const sub = await fetch(base, { method: "POST", headers });
+  const list = await fetch(base, { headers });
+  return new Response(
+    `Subscribe: ${sub.status} ${await sub.text()}\n\nSubscribed apps: ${await list.text()}`,
+    { headers: { "Content-Type": "text/plain; charset=utf-8" } },
+  );
 }
 
 function verifyWebhook(url, env) {
