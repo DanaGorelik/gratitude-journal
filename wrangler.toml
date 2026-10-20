@@ -4,15 +4,15 @@ compatibility_date = "2025-09-01"
 # Keep variables added in the Cloudflare dashboard when deploying.
 keep_vars = true
 
-# Cron runs in UTC. 06:00 UTC is 09:00 in Israel during summer time and
-# 07:00 UTC is 09:00 in winter; the handler only sends when it is 09:00 in
+# Cron runs in UTC. 18:00 UTC is 21:00 in Israel during summer time and
+# 19:00 UTC is 21:00 in winter; the handler only sends when it is 21:00 in
 # Israel, so exactly one of these fires a message each day.
 [triggers]
-crons = ["0 6 * * *", "0 7 * * *"]
+crons = ["0 18 * * *", "0 19 * * *"]
 
 [vars]
 TIMEZONE = "Asia/Jerusalem"
-SEND_HOUR = "9"
+SEND_HOUR = "21"
 TEMPLATE_NAME = "gratitude_morning"
 TEMPLATE_LANG = "he"
 GRAPH_VERSION = "v23.0"

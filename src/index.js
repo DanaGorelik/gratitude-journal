@@ -160,7 +160,7 @@ async function receiveWebhook(request, env) {
         const { count } = await env.DB.prepare(
           "SELECT COUNT(*) AS count FROM entries WHERE day = ?",
         ).bind(day).first();
-        await sendText(env, count >= 3 ? "נשמר 🙏 שיהיה יום נפלא!" : `נשמר (${count}/3) ✨`);
+        await sendText(env, count >= 3 ? "נשמר 🙏 לילה טוב!" : `נשמר (${count}/3) ✨`);
       }
     }
   }
@@ -240,7 +240,7 @@ async function journalPage(env, q) {
 
   const empty = q
     ? `<p class="empty">Nothing matches “${esc(q)}”.</p>`
-    : `<p class="empty">No entries yet. Answer tomorrow's 9:00 WhatsApp message and they'll show up here.</p>`;
+    : `<p class="empty">No entries yet. Answer tonight's 21:00 WhatsApp message and they'll show up here.</p>`;
 
   const html = `<!doctype html>
 <html lang="en">

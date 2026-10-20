@@ -1,6 +1,6 @@
 # Gratitude journal
 
-Every morning at 09:00 (Israel time) WhatsApp asks, in Hebrew: *בוקר טוב ☀️ על אילו 3 דברים יש לך להודות היום?*
+Every evening at 21:00 (Israel time) WhatsApp asks, in Hebrew: *בוקר טוב ☀️ על אילו 3 דברים יש לך להודות היום?*
 Reply in WhatsApp (one message with 3 lines, or 3 separate messages) and each item is saved.
 Your journal lives at a private link you can add to your iPhone home screen.
 
@@ -91,7 +91,7 @@ Until these are done, Meta only delivers dashboard test webhooks, so replies nev
 
 ## Changing things
 
-- **Time**: `SEND_HOUR` in `wrangler.toml`. The two crons there are 06:00 and 07:00 UTC, which cover 09:00 in Israel in summer and winter. For a different hour, shift both by the same amount.
+- **Time**: `SEND_HOUR` in `wrangler.toml`. The two crons there are 18:00 and 19:00 UTC, which cover 21:00 in Israel in summer and winter. For a different hour, shift both by the same amount.
 - **Wording**: edit the template in WhatsApp Manager (or create a new one and change `TEMPLATE_NAME`).
 
 ## Running locally
