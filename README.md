@@ -1,6 +1,6 @@
 # Gratitude journal
 
-Every evening at 21:00 (Israel time) WhatsApp asks, in Hebrew: *בוקר טוב ☀️ על אילו 3 דברים יש לך להודות היום?*
+Every evening at 21:00 (Israel time) WhatsApp asks, in Hebrew: *ערב טוב 🌙 על אילו 3 דברים יש לך להודות היום?*
 Reply in WhatsApp (one message with 3 lines, or 3 separate messages) and each item is saved.
 Your journal lives at a private link you can add to your iPhone home screen.
 
@@ -41,8 +41,8 @@ The token on the API Setup page dies after 24 hours, so make a permanent one:
 WhatsApp only lets an app start a conversation with an approved template.
 
 1. In the Meta app, **WhatsApp → API Setup → Manage message templates** (opens WhatsApp Manager) → **Create template**.
-2. Category **Marketing** (Meta reclassifies a Utility version and it can get stuck in review), name `gratitude_morning`, language **Hebrew**.
-3. Body: `בוקר טוב ☀️ על אילו 3 דברים יש לך להודות היום?`
+2. Category **Marketing** (Meta reclassifies a Utility version and it can get stuck in review), name `gratitude_evening`, language **Hebrew**.
+3. Body: `ערב טוב 🌙 על אילו 3 דברים יש לך להודות היום?`
 4. Submit. Approval is usually quick.
 
 ### 5. Deploy the Worker
