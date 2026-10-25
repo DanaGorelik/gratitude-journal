@@ -33,6 +33,7 @@ export default {
       if (sub === "/") return journalPage(env, url.searchParams.get("q") || "");
       if (sub === "/export.csv") return exportCsv(env);
       if (sub === "/subscribe") return subscribeApp(env, url.searchParams.get("waba"));
+      if (sub === "/diagnose") return diagnose(env, url.searchParams.get("waba"));
       if (sub === "/send-now") {
         const res = await sendPrompt(env);
         return new Response(res.ok ? "Sent. Check WhatsApp." : `Failed: ${res.error}`, {
@@ -109,6 +110,46 @@ async function subscribeApp(env, waba) {
   );
 }
 
+async function recordDeliveryError(env, detail) {
+  await env.DB.prepare(
+    "CREATE TABLE IF NOT EXISTS delivery_errors (id INTEGER PRIMARY KEY AUTOINCREMENT, at TEXT NOT NULL, detail TEXT NOT NULL)",
+  ).run();
+  await env.DB.prepare("INSERT INTO delivery_errors (at, detail) VALUES (?, ?)")
+    .bind(new Date().toISOString(), detail)
+    .run();
+}
+
+// One page with everything needed to see why messages aren't arriving.
+async function diagnose(env, waba) {
+  const lines = [];
+  const missing = ["WA_TOKEN", "WA_PHONE_NUMBER_ID", "MY_NUMBER", "APP_SECRET", "VERIFY_TOKEN"].filter((k) => !env[k]);
+  lines.push(`Missing settings: ${missing.length ? missing.join(", ") : "none"}`);
+  lines.push(`Template in use: ${env.TEMPLATE_NAME} (${env.TEMPLATE_LANG}), sends at ${env.SEND_HOUR}:00 ${env.TIMEZONE}`);
+
+  const headers = { Authorization: `Bearer ${env.WA_TOKEN}` };
+  const g = (path) =>
+    fetch(`https://graph.facebook.com/${env.GRAPH_VERSION}/${path}`, { headers })
+      .then((r) => r.text())
+      .catch((err) => `request failed: ${err}`);
+  lines.push(`\nToken / phone number: ${await g(`${env.WA_PHONE_NUMBER_ID}?fields=display_phone_number,verified_name,quality_rating,status`)}`);
+  if (waba && /^\d+$/.test(waba)) {
+    lines.push(`\nTemplates: ${await g(`${waba}/message_templates?fields=name,language,status,category&limit=20`)}`);
+  } else {
+    lines.push("\nTemplates: add ?waba=<WhatsApp Business Account ID> to the URL to check them");
+  }
+
+  try {
+    const { results } = await env.DB.prepare(
+      "SELECT at, detail FROM delivery_errors ORDER BY id DESC LIMIT 10",
+    ).all();
+    lines.push(`\nRecent delivery errors:\n${results.length ? results.map((r) => `${r.at}  ${r.detail}`).join("\n") : "none"}`);
+  } catch {
+    lines.push("\nRecent delivery errors: none recorded yet");
+  }
+
+  return new Response(lines.join("\n"), { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+}
+
 function verifyWebhook(url, env) {
   if (
     url.searchParams.get("hub.mode") === "subscribe" &&
@@ -135,6 +176,14 @@ async function receiveWebhook(request, env) {
 
   for (const entry of payload.entry || []) {
     for (const change of entry.changes || []) {
+      // WhatsApp reports delivery failures here, after the send itself was accepted.
+      for (const st of change.value?.statuses || []) {
+        if (st.status !== "failed") continue;
+        const err = st.errors?.[0] || {};
+        const detail = `${err.code ?? "?"} ${err.title ?? ""} ${err.error_data?.details ?? err.message ?? ""}`.trim();
+        console.error("Delivery failed:", detail);
+        await recordDeliveryError(env, detail);
+      }
       for (const msg of change.value?.messages || []) {
         if (msg.from !== env.MY_NUMBER) {
           console.warn(`Ignoring message from ${msg.from}; MY_NUMBER is ${env.MY_NUMBER}`);
