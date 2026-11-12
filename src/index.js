@@ -81,8 +81,19 @@ async function graph(env, body) {
   return { ok: true };
 }
 
-function sendPrompt(env) {
-  // A template is required because this message starts the conversation.
+const PROMPT_TEXT = "ערב טוב 🌙 על אילו 3 דברים יש לך להודות היום?";
+
+async function sendPrompt(env) {
+  // WhatsApp allows plain text within 24 hours of your last message, and plain
+  // text isn't subject to Meta's limits on marketing templates. Answering each
+  // night keeps the window open for the next night's 21:00 message.
+  const last = await lastInbound(env);
+  const sinceLast = last ? Date.now() - Date.parse(last) : Infinity;
+  if (sinceLast < 23.5 * 3600 * 1000) {
+    const res = await sendText(env, PROMPT_TEXT);
+    if (res.ok) return res;
+  }
+  // Otherwise a template is required because this message starts the conversation.
   return graph(env, {
     type: "template",
     template: { name: env.TEMPLATE_NAME, language: { code: env.TEMPLATE_LANG } },
@@ -108,6 +119,22 @@ async function subscribeApp(env, waba) {
     `Subscribe: ${sub.status} ${await sub.text()}\n\nSubscribed apps: ${await list.text()}`,
     { headers: { "Content-Type": "text/plain; charset=utf-8" } },
   );
+}
+
+async function recordInbound(env, timestamp) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)").run();
+  await env.DB.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('last_inbound', ?)")
+    .bind(new Date(Number(timestamp) * 1000).toISOString())
+    .run();
+}
+
+async function lastInbound(env) {
+  try {
+    const row = await env.DB.prepare("SELECT value FROM meta WHERE key = 'last_inbound'").first();
+    return row?.value || null;
+  } catch {
+    return null; // table not created yet
+  }
 }
 
 async function recordDeliveryError(env, detail) {
@@ -189,7 +216,13 @@ async function receiveWebhook(request, env) {
           console.warn(`Ignoring message from ${msg.from}; MY_NUMBER is ${env.MY_NUMBER}`);
           continue;
         }
+        await recordInbound(env, msg.timestamp);
         if (msg.type !== "text") continue;
+        // A short hello just reopens the 24-hour window; it isn't a journal entry.
+        if (/^(hi|hey|hello|start|היי|הי|שלום|התחל)[!.\s]*$/i.test((msg.text?.body || "").trim())) {
+          await sendText(env, "👋 אני כאן. נתראה ב-21:00.");
+          continue;
+        }
         const items = splitItems(msg.text?.body || "");
         if (!items.length) continue;
 
