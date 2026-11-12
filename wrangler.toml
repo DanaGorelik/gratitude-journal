@@ -13,7 +13,7 @@ crons = ["0 18 * * *", "0 19 * * *"]
 [vars]
 TIMEZONE = "Asia/Jerusalem"
 SEND_HOUR = "21"
-TEMPLATE_NAME = "gratitude_evening"
+TEMPLATE_NAME = "gratitude_morning"
 TEMPLATE_LANG = "he"
 GRAPH_VERSION = "v23.0"
 
